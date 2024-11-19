@@ -1,0 +1,146 @@
+--- 
+format: 
+  revealjs:
+    theme: themes/uu.scss
+    logo: images/UU_logo_2021_EN_RGB.png
+    footer: ""
+---
+
+# ResearchCloud Component Design
+
+::: {.r-stack}
+Mini-Workshop
+:::
+
+::: {.footer}
+Jelle Treep & Dawa Ometto
+:::
+
+# Introduction
+
+## Welcome
+
+Who are we, what do we do.
+
+Who is in the room?
+
+Do you have experience with:
+
+* ResearchCloud?
+* Ansible / configuration management?
+
+
+## ResearchCloud Lightning Intro
+
+* Collaborative Organisations
+* Workspaces
+* Catalog Items
+* Components!
+	- Different types (Ansible, Docker, PowerShell)
+
+## Some use cases for components
+
+- Adam (?)
+- Dawa (Galaxy)
+
+# Creating components
+
+##
+
+Two aspects:
+
+1. In the portal
+2. Code in a git repository
+
+…but first: how do components on ResearchCloud work?
+
+## Theory
+
+Special components:
+
+- SRC-OS
+- SRC-CO
+- SRC-External (for different types)
+- SRC Nginx (installs openid client_id)
+
+Custom components are executed on the workspace from within SRC-External.
+
+-> your component code is executed within a specific environment.
+
+This leads to complications when testing (specific Ansible versions and dependencies available on the workspace).
+
+## Portal
+
+* Creating a new component
+* Parameters
+* Versions
+* Adding a component to a test catalog item
+
+## Ansible
+
+Template repo:
+
+https://github.com/UtrechtUniversity/src-component-template
+
+## Ansible
+
+Try running the test playbook on a container!
+
+```
+docker pull ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_jammy
+
+docker run -d --privileged --name src_component_test -v $(pwd):/etc/rsc/my_component ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_jammy /sbin/init
+
+docker exec src_component_test run_component.sh /etc/rsc/my_component/playbook.yml
+```
+## Ansible
+### Playbooks and tasks
+
+* Variables
+* Conditionals
+* Loops
+
+## Ansible
+### Roles and collections
+
+* What is a role/collection?
+* Using external roles and collections on ResearchCloud
+* Our collections (uusrc.general, uusrc.ibridges)
+
+## Ansible
+### Do’s and don’ts
+
+* Do: use modules instead of command
+* Don’t: try to use Ansible like a programming language (e.g. variable reassignment)
+    * …
+
+## CI, linting, testing
+
+No time to explain in detail, but see the template repo.
+
+# Creating your own component
+
+##
+
+Possible use cases to explore:
+
+1. VSCodium
+1. Recreate Jupyter Notebook component
+1. …something else? Binder?
+1. Your own app!
+
+##
+
+Think about the steps that need to be performed, e.g:
+
+1. Create a python venv
+1. Install jupyterlabs in it
+1. Run it as a system service
+1. Add a reverse proxy
+
+What parameters do you need? 
+
+# Wrap up
+
+* How did it go?
+* Future steps
