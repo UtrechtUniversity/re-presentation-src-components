@@ -18,21 +18,46 @@ Jelle Treep & Dawa Ometto
 
 # Introduction
 
-## Welcome
+## Who are we?
 
-Who we are
+ITS Research Engineering. Core activities include:
 
-## Program
+- Projects
+- Trainings
+- Consultancy (e.g. HPC)
+- VRE service
 
-09.00-9.30: Walk-in
-09.30: Welcome / intro
-10.00: Some usecases for SRC components
-10.15: Introduction to designing components & best practices
-11.15: Design your own component!
-12.15: Conclusion
-12.30-13.00: Lunch
+##
 
-## Welcome
+<br>
+```{mermaid}
+flowchart LR
+  B((RDM Support))
+  E --- B --- A
+  subgraph UB["UU Library"]
+    A(Academic Services)
+  end
+  subgraph ITS[ITS]
+    C(RDMS)
+    C --> D(Yoda team)
+    C --> E(Research Engineering)
+  end
+
+style UB fill:#FFCD00
+style ITS fill:#FFCD00
+style A fill:#fff9dd
+style C fill:#fff9dd
+style D fill:#fff9dd
+style E fill:#fff9dd
+```
+
+::: {style="text-align: center; margin-top: 180px; font-size: 3em; color: red;"}
+
+uu.nl/rdm
+
+:::
+
+## Welcome!
 
 Do you have experience with:
 
@@ -40,23 +65,44 @@ Do you have experience with:
 * Ansible / configuration management?
 * Docker / Podman?
 
+## Program
+
+- 09.00: Walk-in
+- 09.30: Welcome & intro to SRC
+- 10.00: Some usecases for SRC components
+- 10.15: Introduction to designing components & best practices
+- 11.15: Design your own component!
+- 12.15: Wrap up
+- 12.30-13.00: Lunch
+
 ## These Slides
 
 You can find these slides here:
 
-https://utrechtuniversity.github.io/re-presentation-src-components/slides#/
+[https://utrechtuniversity.github.io/re-presentation-src-components/slides#/](https://utrechtuniversity.github.io/re-presentation-src-components/slides#/)
 
 You can copy/paste some URLs and commands later on.
 
 ## ResearchCloud Lightning Intro
 
-[VRE Documentation](https://utrechtuniversity.github.io/vre-docs/)
+Some advantages of SURF ResearchCloud:
 
-* Collaborative Organisations
+- Easy access to compute and storage
+- Researchers can start VMs themselves
+- Easy collaboration (SRAM)
+- Cloud neutral: deploy VMs on SURF infrastructure or elsewhere
+
+## ResearchCloud Lightning Intro
+
+* Collaborative Organisations & Wallets
 * Workspaces
 * Catalog Items
 * Components!
-	- Different types (Ansible, Docker, PowerShell)
+
+Documentation for ResearchCloud:
+
+  * Our [VRE Docs](https://utrechtuniversity.github.io/vre-docs/)
+  * SURF's [wiki](https://servicedesk.surf.nl/wiki/display/WIKI/SURF+Research+Cloud)
 
 ## Some use cases for components
 
@@ -67,27 +113,10 @@ You can copy/paste some URLs and commands later on.
 
 ##
 
-Two aspects:
+Two sides of component development:
 
-1. In the portal
+1. Configuration in the portal
 2. Code in a git repository
-
-…but first: how do components on ResearchCloud work?
-
-## Theory
-
-Special components:
-
-- SRC-OS
-- SRC-CO
-- SRC-External (for different types)
-- SRC Nginx (installs openid client_id)
-
-Custom components are executed on the workspace from within SRC-External.
-
--> be aware that your component code is executed within a specific environment.
-
-This leads to complications when testing (specific Ansible versions and dependencies available on the workspace).
 
 ## Portal
 
@@ -95,6 +124,26 @@ This leads to complications when testing (specific Ansible versions and dependen
 * Parameters
 * Versions
 * Adding a component to a test catalog item
+
+## Portal
+
+Note about the special SURF components:
+
+- SRC-OS
+- SRC-CO
+- SRC-External (for different types)
+- SRC Nginx
+
+## SRC-External
+
+Custom components are executed *on the workspace* from within SRC-External.
+
+This can lead to complications due to:
+
+* Specific Ansible version on the workspace
+* Specific Ansible collections on the workspace
+* OS-dependencies on the workspace
+* ...
 
 ## Ansible
 
@@ -142,9 +191,7 @@ docker exec src_component_test run_component.sh /etc/rsc/my_component/playbook.y
 ## Ansible
 ### Our collections
 
-Documentation: https://utrechtuniversity.github.io/researchcloud-items/
-
-* [uusrc.general](https://github.com/UtrechtUniversity/researchcloud-items)
+* [uusrc.general](https://github.com/UtrechtUniversity/researchcloud-items) (main repo, [docs](https://utrechtuniversity.github.io/researchcloud-items/))
 * [uusrc.ibridges](https://github.com/UtrechtUniversity/ibridges-ansible) (iRODS data transfer)
 
 ## Ansible
@@ -152,7 +199,7 @@ Documentation: https://utrechtuniversity.github.io/researchcloud-items/
 
 * Do: use modules instead of command
 * Don’t: try to use Ansible like a programming language (e.g. variable reassignment)
-    * …
+* ...
 
 ## CI, linting, testing
 
