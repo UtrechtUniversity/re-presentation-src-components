@@ -20,17 +20,37 @@ Jelle Treep & Dawa Ometto
 
 ## Welcome
 
-Who are we, what do we do.
+Who we are
 
-Who is in the room?
+## Program
+
+09.00-9.30: Walk-in
+09.30: Welcome / intro
+10.00: Some usecases for SRC components
+10.15: Introduction to designing components & best practices
+11.15: Design your own component!
+12.15: Conclusion
+12.30-13.00: Lunch
+
+## Welcome
 
 Do you have experience with:
 
 * ResearchCloud?
 * Ansible / configuration management?
+* Docker / Podman?
 
+## These Slides
+
+You can find these slides here:
+
+https://utrechtuniversity.github.io/re-presentation-src-components/slides#/
+
+You can copy/paste some URLs and commands later on.
 
 ## ResearchCloud Lightning Intro
+
+[VRE Documentation](https://utrechtuniversity.github.io/vre-docs/)
 
 * Collaborative Organisations
 * Workspaces
@@ -40,8 +60,8 @@ Do you have experience with:
 
 ## Some use cases for components
 
-- Adam (?)
-- Dawa (Galaxy)
+- Adam El Kassimi 
+- Dawa Ometto ([Galaxy](https://github.com/UtrechtUniversity/src-component-galaxy/))
 
 # Creating components
 
@@ -65,7 +85,7 @@ Special components:
 
 Custom components are executed on the workspace from within SRC-External.
 
--> your component code is executed within a specific environment.
+-> be aware that your component code is executed within a specific environment.
 
 This leads to complications when testing (specific Ansible versions and dependencies available on the workspace).
 
@@ -78,21 +98,34 @@ This leads to complications when testing (specific Ansible versions and dependen
 
 ## Ansible
 
-Template repo:
-
-https://github.com/UtrechtUniversity/src-component-template
+1. Fork the [template repo](https://github.com/UtrechtUniversity/src-component-template)
+1. Clone your fork locally
+1. `cd` to the repo directory
 
 ## Ansible
 
 Try running the test playbook on a container!
 
 ```
+podman pull ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_jammy
+
+podman run -d --name src_component_test -v $(pwd):/etc/rsc/my_component ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_jammy /sbin/init
+
+podman exec src_component_test run_component.sh /etc/rsc/my_component/playbook.yml
+```
+
+## Ansible
+
+If you're using Docker instead of Podman:
+
+```
 docker pull ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_jammy
 
-docker run -d --privileged --name src_component_test -v $(pwd):/etc/rsc/my_component ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_jammy /sbin/init
+docker run --privileged -d --name src_component_test -v $(pwd):/etc/rsc/my_component ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_jammy /sbin/init
 
 docker exec src_component_test run_component.sh /etc/rsc/my_component/playbook.yml
 ```
+
 ## Ansible
 ### Playbooks and tasks
 
@@ -105,7 +138,14 @@ docker exec src_component_test run_component.sh /etc/rsc/my_component/playbook.y
 
 * What is a role/collection?
 * Using external roles and collections on ResearchCloud
-* Our collections (uusrc.general, uusrc.ibridges)
+
+## Ansible
+### Our collections
+
+Documentation: https://utrechtuniversity.github.io/researchcloud-items/
+
+* [uusrc.general](https://github.com/UtrechtUniversity/researchcloud-items)
+* [uusrc.ibridges](https://github.com/UtrechtUniversity/ibridges-ansible) (iRODS data transfer)
 
 ## Ansible
 ### Do’s and don’ts
