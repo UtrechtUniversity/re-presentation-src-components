@@ -29,7 +29,8 @@ Using [Ollama](https://github.com/ollama/ollama) you can download and run variou
 
 * Install and run Ollama
   * allow the user to specify different models that should be loaded using a ResearchCloud parameter.
-* Configure Nginx to reverse proxy the REST API. Protect the route with HTTP basic authentication.
+* Configure Nginx to reverse proxy the REST API.
+  * Protect the route with HTTP basic authentication.
 
 ## Preparations
 
