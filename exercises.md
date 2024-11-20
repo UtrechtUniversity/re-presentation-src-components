@@ -1,9 +1,10 @@
 # Build your own component!
 
-A pretty common usecase for ResearchCloud components is to install and run a webapplication, and serve it to the outside world. Doing so requires at least the following steps to performed in your playbook:
+A pretty common usecase for ResearchCloud components is to install and run a web application, and serve it to the outside world. Doing so requires the following steps to performed in your playbook:
 
 1. Installing dependencies.
 1. Installing the application.
+   * Configuring the application, if needed.
 1. Creating a system service definition for the application, so it reloads when the workspace is restarted.
 1. Running the application (via the system service), so that it listens on `localhost`
 1. Using a reverse proxy to pass on incoming requests to the workspace's FQDN to the application running on `localhost`.
@@ -18,7 +19,7 @@ Here are two example web applications that you could try to get running in your 
 
 ### ASReview
 
-ASReview is an application that leverages machine learning to make the performance of systematic reviews more efficient. The exercise:
+[ASReview](https://asreview.nl/download/) is an application that leverages machine learning to make the performance of systematic reviews more efficient. The exercise:
 
 * Install and run the ASReview web application
 * Configure an Nginx reverse proxy for the application, enabling SRAM authentication on the workspace.
