@@ -30,26 +30,8 @@ ITS Research Engineering. Core activities include:
 ##
 
 <br>
-```{mermaid}
-flowchart LR
-  B((RDM Support))
-  E --- B --- A
-  subgraph UB["UU Library"]
-    A(Academic Services)
-  end
-  subgraph ITS[ITS]
-    C(RDMS)
-    C --> D(Yoda team)
-    C --> E(Research Engineering)
-  end
 
-style UB fill:#FFCD00
-style ITS fill:#FFCD00
-style A fill:#fff9dd
-style C fill:#fff9dd
-style D fill:#fff9dd
-style E fill:#fff9dd
-```
+![](images/rdm.png)
 
 ::: {style="text-align: center; margin-top: 180px; font-size: 3em; color: red;"}
 
@@ -79,7 +61,7 @@ Do you have experience with:
 
 You can find these slides here:
 
-[https://utrechtuniversity.github.io/re-presentation-src-components/slides#/](https://utrechtuniversity.github.io/re-presentation-src-components/slides#/)
+[https://edu.nl/gy6np](https://utrechtuniversity.github.io/re-presentation-src-components/slides#/)
 
 You can copy/paste some URLs and commands later on.
 
@@ -94,15 +76,56 @@ Some advantages of SURF ResearchCloud:
 
 ## ResearchCloud Lightning Intro
 
-* Collaborative Organisations & Wallets
-* Workspaces
+SURF HPC cloud infrastructure:
+
+- up to 60 CPU cores
+- up to 750 GB RAM
+- up to 4 GPU drives (NVIDIA A10)
+- up to 1.5 TB storage
+
+
+
+## ResearchCloud Lightning Intro
+
+![](images/SRAM-collaboration.png)
+
+## ResearchCloud Lightning Intro
+
+![](images/SRAM-members.png)
+
+## ResearchCloud Lightning Intro
+
+![](images/SRAM-groups.png)
+
+## ResearchCloud Lightning Intro
+
+:::{.theme-section-small}
+* Workspaces (aka VMs, servers)
+  - Running instances of a Catalog item
 * Catalog Items
+  - A set of components
+  - Parameters
+  - VM size
 * Components!
+  - (Installation) scripts
+    - Ansible
+    - Docker
+    - Powershell
+:::
+
+## ResearchCloud Lightning Intro
+
+:::{.theme-section}
+[ResearchCloud Portal](https://surfresearchcloud.nl/)
+
+<br>
 
 Documentation for ResearchCloud:
 
   * Our [VRE Docs](https://utrechtuniversity.github.io/vre-docs/)
   * SURF's [wiki](https://servicedesk.surf.nl/wiki/display/WIKI/SURF+Research+Cloud)
+
+:::
 
 ## Some use cases for components
 
@@ -110,20 +133,6 @@ Documentation for ResearchCloud:
 - Dawa Ometto ([Galaxy](https://github.com/UtrechtUniversity/src-component-galaxy/))
 
 # Creating components
-
-##
-
-Two sides of component development:
-
-1. Configuration in the portal
-2. Code in a git repository
-
-## Portal
-
-* Creating a new component
-* Parameters
-* Versions
-* Adding a component to a test catalog item
 
 ## Portal
 
