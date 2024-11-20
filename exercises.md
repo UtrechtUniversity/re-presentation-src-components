@@ -35,9 +35,10 @@ Using [Ollama](https://github.com/ollama/ollama) you can download and run variou
 
 ## Preparations
 
-### Fork the template repository
+### Create a repository from this the template repository and clone it locally
 
-https://github.com/UtrechtUniversity/src-component-galaxy/
+[https://github.com/UtrechtUniversity/src-component-template](https://github.com/UtrechtUniversity/src-component-template)
+
 
 ### Create a Component in the portal
 
@@ -71,7 +72,7 @@ If all goes well, you will be able to open a browser and load http://localhost:8
 
 ### Edit your component's code and test
 
-Make your changes, then apply them to the test container using:
+Make changes to your ansible playbook, then apply them to the test container using:
 
 `podman exec src_component_test run_component.sh /etc/rsc/my_component/playbook.yml` (from the same directory as your playbook)
 
