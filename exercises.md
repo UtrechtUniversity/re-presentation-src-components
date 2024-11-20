@@ -80,9 +80,9 @@ Below are steps that your playbook will probably (or definitely) need to execute
 
 ### Installing dependencies
 
-Look up your application's dependencies, if there are any: ny required system packages should be installed with the [package module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html).
+Look up your application's dependencies, if there are any. Required system packages should be installed with the [package module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html).
 
-Depending on how your application is packaged/shipped, there may also be other kinds of dependencies (Node etc.).
+Depending on how your application is shipped, there may also be other kinds of dependencies (Node etc.).
 
 ### Installing the application
 
