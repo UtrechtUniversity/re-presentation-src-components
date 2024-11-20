@@ -16,7 +16,7 @@ Mini-Workshop
 Jelle Treep & Dawa Ometto
 :::
 
-# Introduction
+# Welcome!
 
 ## Who are we?
 
@@ -62,8 +62,6 @@ Do you have experience with:
 You can find these slides here:
 
 [https://edu.nl/gy6np](https://utrechtuniversity.github.io/re-presentation-src-components/slides#/)
-
-You can copy/paste some URLs and commands later on.
 
 ## ResearchCloud Lightning Intro
 
@@ -129,7 +127,7 @@ Documentation for ResearchCloud:
 
 ## Some use cases for components
 
-- Adam El Kassimi 
+- Adam El Kassimi (Elyra)
 - Dawa Ometto ([Galaxy](https://github.com/UtrechtUniversity/src-component-galaxy/))
 
 # Creating components
@@ -153,6 +151,23 @@ This can lead to complications due to:
 * Specific Ansible collections on the workspace
 * OS-dependencies on the workspace
 * ...
+
+## Ansible
+
+A Playbook is the main script file that will be applied on a machine managed by Ansible:
+
+```yaml
+---
+- name: Example component
+  hosts: localhost # On ResearchCloud, the target host is always simply 'localhost'.
+  tasks:
+
+    - name: Output some text # Every task has a name
+      ansible.builtin.debug: # Every task invokes some module
+        msg: hello world # modules have arguments
+
+# If you save this file to `test.yml`, you can run it with: ansible-playbook -i localhost, -c local -vv test.yml
+```
 
 ## Ansible
 
@@ -185,17 +200,80 @@ docker exec src_component_test run_component.sh /etc/rsc/my_component/playbook.y
 ```
 
 ## Ansible
-### Playbooks and tasks
 
+* Modules
 * Variables
+    * ResearchCloud parameters will be available as variables in your playbook!
 * Conditionals
 * Loops
 
 ## Ansible
+
+```yaml
+- name: Example component
+  hosts: localhost
+  vars:
+    foo: true
+  tasks:
+
+    - name: Output some text
+      ansible.builtin.debug:
+        msg: "{{ item }} is a number"
+      with_items:
+        - 1
+        - 2
+        - 3
+      when: foo
+```
+
+## Ansible
 ### Roles and collections
 
-* What is a role/collection?
-* Using external roles and collections on ResearchCloud
+An Ansible **role** is a reusable set of tasks that can be (re-)applied with distinct arguments.
+
+An Ansible **collection** is a set of roles (as well as plugins and playbooks).
+
+Both can be installed with `ansible-galaxy`.
+
+## Ansible
+### Roles
+
+```yaml
+---
+# Top of your playbook
+- name: Example component
+  roles:
+    - role: my_local_role # from the 'roles' directory of your repo
+    - role: uusrc.general.uv # from a collection
+      vars:
+        uv_venvs:
+          - path: /tmp/test_venv
+            python: 3.13
+        uv_python_versions:
+          - 3.11
+  tasks:
+    # You can also include a role from within your tasks
+    - name: Include a role
+      ansible.builtin.include_role: foobar
+```
+
+## Ansible
+### Roles and collections
+
+The dependencies declared in `requirements.yml` in the root of your repository will be automatically installed.
+
+```yaml
+---
+collections:
+  - name: https://github.com/UtrechtUniversity/researchcloud-items.git
+    type: git
+    version: main
+roles:
+  - src: geerlingguy.docker
+    version: 6.1.0
+```
+
+This is simply a [standard requirements file](https://docs.ansible.com/ansible/latest/galaxy/user_guide.html#installing-roles-and-collections-from-the-same-requirements-yml-file) for `ansible-galaxy`.
 
 ## Ansible
 ### Our collections
@@ -204,39 +282,106 @@ docker exec src_component_test run_component.sh /etc/rsc/my_component/playbook.y
 * [uusrc.ibridges](https://github.com/UtrechtUniversity/ibridges-ansible) (iRODS data transfer)
 
 ## Ansible
-### Do’s and don’ts
 
-* Do: use modules instead of command
-* Don’t: try to use Ansible like a programming language (e.g. variable reassignment)
-* ...
+**Don't**: use `command` and `shell` where you can use a dedicated module instead.
 
-## CI, linting, testing
+* More portable
+* No need for error/output handling 
+* `ansible.builtin.shell` especially can show unexpected behaviour
 
-No time to explain in detail, but see the template repo.
+Examples: `ansible.builtin.pip`, `ansible.builtin.service`
+
+## Ansible
+
+**Don't**: depend uncritically on external roles.
+<br/><br/>
+Fix dependencies to specific tags or commits for stability and security. 
+
+## Ansible
+
+**Do**: process/sanitize incoming ResearchCloud parameters.
+<br/><br/>
+All parameters passed along by the ResearchCloud portal arrive in your playbook as *strings*:
+
+* Newlines are escaped
+* Possibly empty...
+
+## Ansible
+
+Parsing incoming ResearchCloud parameters:
+
+```yaml
+---
+# Top of your playbook
+- name: Example component parameters
+  vars:
+    _src_component_some_str: "{{ src_component_some_str | default('fallback value', true) | replace('\\n','\n') }}"
+    _src_component_some_boolean: "{{ src_component_some_boolean | default(false, true) | bool }}"
+    _src_component_some_dict: "{{ _src_component_some_dict | default({}, true) | from_yaml }}"
+    # good luck with multiline yaml/json!
+  tasks:
+    ...
+```
+
+## Ansible
+
+**Do**: keep your playbooks simple.
+<br/><br/>
+Separate concerns into roles and task files:
+
+- roles for anything that has potential to be reused
+- separate tasks into files to prevent clutter
+
+## Ansible
+
+Including task files:
+
+```yaml
+ansible.builtin.include_tasks: tasks/dependencies/debian.yml
+when: ansible_os_family == 'Debian'
+
+ansible.builtin.include_tasks: tasks/dependencies/rh.yml
+when: ansible_os_family == 'RedHat'
+```
+
+## CI
+
+The template repo contains boilerplate for:
+
+* `molecule` tests, configured especially for ResearchCloud 
+* `ansible-lint`
 
 # Creating your own component
 
 ##
 
-Possible use cases to explore:
+Build your own!
 
-1. VSCodium
-1. Recreate Jupyter Notebook component
-1. …something else? Binder?
+Suggested exercise: deploy a web application and add authentication.
+
+Ideas:
+
+1. [ASReview](https://asreview.nl/download/#)
+1. [Ollama API](https://github.com/ollama/ollama?#rest-api)
+1. [Theia IDE](https://theia-ide.org/#theiaidedownload)
 1. Your own app!
+
+See [here](https://github.com/UtrechtUniversity/re-presentation-src-components/blob/main/exercises.md) for more detailed exercise instructions.
 
 ##
 
 Think about the steps that need to be performed, e.g:
 
 1. Create a python venv
-1. Install jupyterlabs in it
+1. Install ASReview in it
 1. Run it as a system service
 1. Add a reverse proxy
 
 What parameters do you need? 
 
 # Wrap up
+
+##
 
 * How did it go?
 * Future steps
