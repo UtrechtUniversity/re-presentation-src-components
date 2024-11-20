@@ -76,19 +76,19 @@ Make your changes, then apply them to the test container using:
 
 ## Development
 
-Below are steps that your playbook will probably (or definitely) need to execute in order to get your web application up and running. The steps are abstractly described, on purpose: try to figure out how you can use Ansible to do these things yourself! However, if you need some inspiration, you can have a look at .
+Below are steps that your playbook will probably (or definitely) need to execute in order to get your web application up and running. The steps are abstractly described, on purpose: try to figure out how you can use Ansible to do these things yourself!
 
 ### Installing dependencies
 
-Look up your application's dependencies:
+Look up your application's dependencies, if there are any: ny required system packages should be installed with the [package module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html).
 
-1. Any required system packages should be installed with the [package module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html).
-1. Any required Python packages should probably be installed in a virtualenv. Use the [pip module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/pip_module.html)!
-1. Similarly for other kinds of depencies (Node, etc.).
+Depending on how your application is packaged/shipped, there may also be other kinds of dependencies (Node etc.).
 
 ### Installing the application
 
 Depending on the preferred installation method of your application: [clone](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/git_module.html), [download](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html), or use a [package manager](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html) to install it.
+
+If your application is shipped as a Python package, it should probably be installed in a virtualenv. Use the [pip module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/pip_module.html)!
 
 ### Create a system service definition for the application
 
