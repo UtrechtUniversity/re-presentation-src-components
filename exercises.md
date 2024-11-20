@@ -51,7 +51,7 @@ https://github.com/UtrechtUniversity/src-component-galaxy/
 
 For the purposes of this tutorial, you can simply find the *UU Demo Test* Catalog Item and Clone it, then add your custom component to it.
 
-**Note**: as you will see, the **UU Test Demo* Catalog Item already contains the three standard SURF components, as well as Nginx. Nginx will be configured to allow authorization/authentication using SRAM/Single-sign on.
+**Note**: as you will see, the *UU Test Demo* Catalog Item already contains the three standard SURF components, as well as Nginx. Nginx will be configured to allow authorization/authentication using SRAM/Single-sign on.
 
 ### Pull and start the the test container
 
