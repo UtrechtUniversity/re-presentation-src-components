@@ -1,6 +1,96 @@
 # Build your own component!
 
-A pretty common usecase for ResearchCloud components is to install and run a web application, and serve it to the outside world. Doing so requires the following steps to performed in your playbook:
+Exercises:
+
+- [GPU fact]
+- [Webapplication]
+
+## GPU fact
+
+This exercise is designed to practice with Ansible's use of the Jinja templating system.
+
+*You don't need to create an actual component for this*. You can practice with a playbook that you run locally, or an a ResearchCloud VM. Or you can use an online Jinja playground like [this one](https://j2live.ttl255.com/) -- be sure to select the 'Ansible' radio button to use the Ansible set of filters.
+
+Imagine that you have a playbook in which you want to do something conditionally on whether the user has selected a workspace with a GPU. You'd need a variable that determines whether a GPU is present or not. Generally, Ansible provided you with special variables called [facts](https://www.redhat.com/en/blog/playing-ansible-facts) that give you information about the system, such as the number of CPU cores, disks, network...
+
+Sadly, there is (at time of writing) no Ansible fact that gives you information about the system's GPU's! This is likely because there is no simple, unified way to query the system and ask whether any GPU's are available.
+
+But of course we can develop a (good enough) solution ourselves! On Linux, the `lshw` (list hardware) utility provides information that we can use.
+
+### Step 1
+
+Write a playbook that:
+
+1. Uses the `lshw` command to output `json` information on all graphics-related hardware (*hint*: use the `-class display` option to limit output the relevant subset).
+1. Use Jinja filters to parse the outputted `json` into an Ansible variable, and select all entries from the list that are GPUs (as an approximation, let's say that an entry is a GPU if it's `description` field contains the word '3d' or 'gpu').
+1. Store this in a variable `fact_gpus`. Also create a variable `has_gpu` which is only true if there is at least one GPU.
+
+Example output of `lshw -class display -json`:
+
+```
+[                           
+  {
+    "id" : "display:0",
+    "class" : "display",
+    "handle" : "PCI:0000:00:02.0",
+    "description" : "VGA compatible controller",
+    "product" : "GD 5446",
+    "vendor" : "Cirrus Logic",
+    "physid" : "2",
+    "businfo" : "pci@0000:00:02.0",
+    "version" : "00",
+    "width" : 32,
+    "clock" : 33000000,
+    "configuration" : {
+      "latency" : "0"
+    },
+    "capabilities" : {
+      "vga_controller" : true
+    }
+  },
+  {
+    "id" : "display:1",
+    "class" : "display",
+    "claimed" : true,
+    "handle" : "PCI:0000:00:06.0",
+    "description" : "VGA compatible controller",
+    "product" : "TU102 [GeForce RTX 2080 Ti]",
+    "vendor" : "NVIDIA Corporation",
+    "physid" : "6",
+    "businfo" : "pci@0000:00:06.0",
+    "version" : "a1",
+    "width" : 64,
+    "clock" : 33000000,
+    "configuration" : {
+      "driver" : "nvidia",
+      "latency" : "0"
+    },
+    "capabilities" : {
+      "vga_controller" : true,
+      "bus_master" : "bus mastering",
+      "cap_list" : "PCI capabilities listing",
+      "rom" : "extension ROM"
+    }
+  }
+]
+```
+
+### Step 2
+
+Suppose we know there is a GPU and CUDA is installed. We'd like to know the relevant CUDA version. Use the `nvidia-smi` command and Jinja filters to create an Ansible variable that contains the CUDA version.
+
+Example output of `nvidia-smi --version`:
+
+```
+NVIDIA-SMI version  : 595.71.05
+NVML version        : 595.71
+DRIVER version      : 595.71.05
+CUDA Version        : 13.2
+```
+
+## Webapplication
+
+A pretty common usecase for ResearchCloud components is to install and run a web application, and serve it to the outside world, using SRAM to provide Single Sign-on for users. Doing so requires the following steps to performed in your playbook:
 
 1. Installing dependencies.
 1. Installing the application.
@@ -12,33 +102,19 @@ A pretty common usecase for ResearchCloud components is to install and run a web
 
 Follow the [Preparation](#preparations) and [Development](#development) instructions below to get started!
 
-Here are two example web applications that you could try to get running in your component:
+For this exercise you could use any web application that you like. If you have no application that you'd like to try yourself, you can simply use Python's `http` module's in-built fileserver as an app. Try it out locally first:
 
-* ASReview
-* Ollama API
-
-### ASReview
-
-[ASReview](https://asreview.nl/download/) is an application that leverages machine learning to make the performance of systematic reviews more efficient. The exercise:
-
-* Install and run the ASReview web application
-* Configure an Nginx reverse proxy for the application, enabling SRAM authentication on the workspace.
-
-### Ollama API
-
-Using [Ollama](https://github.com/ollama/ollama) you can download and run various LLMs and interact with them in various ways, including using a [REST API](https://github.com/ollama/ollama?#rest-api). The exercise:
-
-* Install and run Ollama
-  * allow the user to specify different models that should be loaded using a ResearchCloud parameter.
-* Configure Nginx to reverse proxy the REST API.
-  * Protect the route with HTTP basic authentication.
+```
+$ python3 -m http.server
+Serving HTTP on :: port 8000 (http://[::]:8000/) ...
+# navigate to http://localhost:8000 and see a file listing of the directory that you ran the command in!
+```
 
 ## Preparations
 
 ### Create a repository from this the template repository and clone it locally
 
 [https://github.com/UtrechtUniversity/src-component-template](https://github.com/UtrechtUniversity/src-component-template)
-
 
 ### Create a Component in the portal
 
@@ -70,11 +146,19 @@ For testing purporses, it will be useful to publish the port on the container on
 
 If all goes well, you will be able to open a browser and load http://localhost:8080 to connect to Nginx on the container. Of course, nothing will actually be served yet.
 
-### Edit your component's code and test
+### Edit and test
 
 Make changes to your ansible playbook, then apply them to the test container using:
 
 `podman exec src_component_test run_component.sh /etc/rsc/my_component/playbook.yml` (from the same directory as your playbook)
+
+The `run_component.sh` script will automatically look for a file named `component_vars.yml` in the same directory as your playbook. You can use this file to mock ResearchCloud parameters.
+
+*Hint*: for best testing, make all of your variables in `component_vars.yml` strings!
+
+```yml
+foo: 'true' # ResearchCloud turns all variables into strings, so to mock correctly, use quotes to set too the string 'true', instead of a YAML Boolean.
+```
 
 ## Development
 
