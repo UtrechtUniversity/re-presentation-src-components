@@ -125,11 +125,6 @@ Documentation for ResearchCloud:
 
 :::
 
-## Some use cases for components
-
-- Adam El Kassimi (Elyra)
-- Dawa Ometto ([Galaxy](https://github.com/UtrechtUniversity/src-component-galaxy/))
-
 # Creating components
 
 ## Portal
@@ -206,6 +201,7 @@ docker exec src_component_test run_component.sh /etc/rsc/my_component/playbook.y
     * ResearchCloud parameters will be available as variables in your playbook!
 * Conditionals
 * Loops
+* Jinja
 
 ## Ansible
 
@@ -218,12 +214,17 @@ docker exec src_component_test run_component.sh /etc/rsc/my_component/playbook.y
 
     - name: Output some text
       ansible.builtin.debug:
-        msg: "{{ item }} is a number"
+        msg: "{{ item }} is a number" # Jinja!
       with_items:
         - 1
         - 2
         - 3
       when: foo
+
+    - name: Output some more text
+      ansible.builtin.debug:
+        msg: Hostname contains web-
+      when: hostname | regex_search('web-.*') # Jinja!
 ```
 
 ## Ansible
@@ -361,6 +362,7 @@ Suggested exercise: deploy a web application and add authentication.
 
 Ideas:
 
+1. Python's `http` module's in-built fileserver (`python -m http.server`)
 1. [ASReview](https://asreview.nl/download/#)
 1. [Ollama API](https://github.com/ollama/ollama?#rest-api)
 1. [Theia IDE](https://theia-ide.org/#theiaidedownload)
