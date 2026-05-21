@@ -2,8 +2,8 @@
 
 Exercises:
 
-- [GPU fact]
-- [Webapplication]
+- [GPU fact](#gpu-fact).
+- [Webapplication](#Webapplication).
 
 ## GPU fact
 
