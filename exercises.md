@@ -53,7 +53,7 @@ While creating this playbook, you can:
 <summary><b>Example Playbook Logic</b></summary>
 
 Use the following Ansible modules:
-- Use the `shell` or `command` module to run `lshw`.
+- Use the `command` module to run `lshw`.
 - Use Jinja to filter and create the `fact_gpus` and `has_gpu` variables.
 - See solution Ansible tasks [here](https://github.com/UtrechtUniversity/researchcloud-items/blob/main/playbooks/roles/fact_workspace_info/tasks/main.yml#L51-L97).
 
@@ -130,6 +130,15 @@ DRIVER version      : 595.71.05
 CUDA Version        : 13.2
 ```
 
+<details>
+<summary><b>Example Playbook Logic</b></summary>
+
+Use the following Ansible modules:
+- Use the `command` module to run `nvida-smi`.
+- Use Jinja to filter out the version on the line containing 'CUDA Version'.
+- See solution Ansible tasks [here](https://github.com/UtrechtUniversity/researchcloud-items/blob/main/playbooks/roles/fact_workspace_info/tasks/main.yml#L51-L97).
+
+</details>
 
 ## Exercise 2: Set Up a Web Application
 
