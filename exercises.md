@@ -1,33 +1,67 @@
-# Build your own component!
+# Build Your Own Component
 
-Exercises:
+This document contains two exercises for creating ResearchCloud components. Follow the step-by-step instructions to build and practice with components.
 
-- [GPU fact](#gpu-fact).
-- [Webapplication](#Webapplication).
+## Exercises:
+1. [Check for GPUs using Ansible facts](#exercise-1-check-for-gpus-using-ansible-facts)
+2. [Set up a Web Application](#exercise-2-set-up-a-web-application)
 
-## GPU fact
+---
 
-This exercise is designed to practice with Ansible's use of the Jinja templating system.
+## Exercise 1: Check for GPUs Using Ansible Facts
 
-*You don't need to create an actual component for this*. You can practice with a playbook that you run locally, or an a ResearchCloud VM. Or you can use an online Jinja playground like [this one](https://j2live.ttl255.com/) -- be sure to select the 'Ansible' radio button to use the Ansible set of filters.
+In this exercise, you'll learn how to work with Ansible and Jinja filters to determine if a GPU is available and retrieve related information.
 
-Imagine that you have a playbook in which you want to do something conditionally on whether the user has selected a workspace with a GPU. You'd need a variable that determines whether a GPU is present or not. Generally, Ansible provided you with special variables called [facts](https://www.redhat.com/en/blog/playing-ansible-facts) that give you information about the system, such as the number of CPU cores, disks, network...
+### Objective
 
-Sadly, there is (at time of writing) no Ansible fact that gives you information about the system's GPU's! This is likely because there is no simple, unified way to query the system and ask whether any GPU's are available.
+Develop skills in:
+- Generating and parsing system information using Ansible
+- Using Jinja filters for templating
+- Creating custom variables to determine GPU availability
 
-But of course we can develop a (good enough) solution ourselves! On Linux, the `lshw` (list hardware) utility provides information that we can use.
+---
 
-### Step 1
+#### Practice Environment
+While creating this playbook, you can:
+- Run it locally.
+- Test it on a ResearchCloud VM.
+- Use an online Jinja templating tool, such as [this one](https://j2live.ttl255.com/) (select the “Ansible” option).
 
-Write a playbook that:
+---
 
-1. Uses the `lshw` command to output `json` information on all graphics-related hardware (*hint*: use the `-class display` option to limit output the relevant subset).
-1. Use Jinja filters to parse the outputted `json` into an Ansible variable, and select all entries from the list that are GPUs (as an approximation, let's say that an entry is a GPU if it's `description` field contains the word '3d' or 'gpu').
-1. Store this in a variable `fact_gpus`. Also create a variable `has_gpu` which is only true if there is at least one GPU.
+### Steps
 
-Example output of `lshw -class display -json`:
+#### Step 1: Identify GPU Information
+1. Write a playbook to execute the `lshw` command and return GPU-related information as JSON.  
+   * **Hint**: Use the `-class display` option in `lshw` to narrow output to GPU/display hardware.
+   * **Hint**: If you cannot use `lshw` on a machine with GPU, see below for example output.
+   
+   Example command:  
+   ```bash
+   lshw -class display -json
+   ```
 
-```
+2. Use Ansible's JSON parsing feature (or Jinja filters) to process the JSON output.
+
+3. From the parsed data:
+   - Identify entries where `description` contains "3d" or "gpu" (these are likely GPUs).
+   - Store the GPU entries in a variable named `fact_gpus`.
+
+4. Create a flag variable called `has_gpu`, which should be `true` if at least one GPU is detected.
+
+<details>
+<summary><b>Example Playbook Logic</b></summary>
+
+Use the following Ansible modules:
+- Use the `shell` or `command` module to run `lshw`.
+- Use Jinja to filter and create the `fact_gpus` and `has_gpu` variables.
+- See solution Ansible tasks [here](https://github.com/UtrechtUniversity/researchcloud-items/blob/main/playbooks/roles/fact_workspace_info/tasks/main.yml#L51-L97).
+
+</details>
+
+
+<details>
+<summary><b>Example lshw output on a machine with GPU</b></summary>
 [                           
   {
     "id" : "display:0",
@@ -73,154 +107,242 @@ Example output of `lshw -class display -json`:
     }
   }
 ]
-```
+</details>
 
-### Step 2
+---
 
-Suppose we know there is a GPU and CUDA is installed. We'd like to know the relevant CUDA version. Use the `nvidia-smi` command and Jinja filters to create an Ansible variable that contains the CUDA version.
+#### Step 2: Retrieve CUDA Version (if applicable)
+If a GPU is found and CUDA is installed, retrieve the installed CUDA version.
 
-Example output of `nvidia-smi --version`:
+1. Use the `nvidia-smi` command to obtain the CUDA version.  
+   Example command:  
+   ```bash
+   nvidia-smi --version
+   ```
 
-```
+2. Parse the command output to extract the `CUDA Version` string and store it in an Ansible variable.
+
+*Example Output of `nvidia-smi --version`:*
+```bash
 NVIDIA-SMI version  : 595.71.05
 NVML version        : 595.71
 DRIVER version      : 595.71.05
 CUDA Version        : 13.2
 ```
 
-## Webapplication
 
-A pretty common usecase for ResearchCloud components is to install and run a web application, and serve it to the outside world, using SRAM to provide Single Sign-on for users. Doing so requires the following steps to performed in your playbook:
+## Exercise 2: Set Up a Web Application
 
-1. Installing dependencies.
-1. Installing the application.
-   * Configuring the application, if needed.
-1. Creating a system service definition for the application, so it reloads when the workspace is restarted.
-1. Running the application (via the system service), so that it listens on `localhost`
-1. Using a reverse proxy to pass on incoming requests to the workspace's FQDN to the application running on `localhost`.
-  * This requires a webserver to be installed. We'll be using Nginx on ResearchCloud, which is available in its own component.
+In this exercise, you'll deploy and serve a web application using Ansible. You'll learn how to configure the application to run in a workspace and use Nginx as a reverse proxy to expose it to users.
 
-Follow the [Preparation](#preparations) and [Development](#development) instructions below to get started!
+---
 
-For this exercise you could use any web application that you like. If you have no application that you'd like to try yourself, you can simply use Python's `http` module's in-built fileserver as an app. Try it out locally first:
+### Objective
 
+You'll learn how to:
+1. Set up and use a Python virtual environment (venv) to isolate your web application.
+2. Deploy Python’s `http` module in-built webserver as an example app.
+3. Define a `systemd` service to manage the application.
+4. Configure Nginx as a reverse proxy to expose the application.
+
+---
+
+### Recommended Example
+
+**Example Web Application:** Use Python's built-in `http` module's webserver. This webserver is simple, effective, and requires minimal setup. If you'd like to use a real-world application, you can substitute your app while following the same steps.
+
+**Outcome for Python Example:**  
+The Python server will allow users to view and browse the files in a directory. After completing the setup:
+- Visiting `http://localhost:8080` through Nginx will show the directory's file listing served by Python.
+
+To try the server locally, run:
+
+```bash
+python3 -m http.server
 ```
-$ python3 -m http.server
+
+You will see:
+
+```bash
 Serving HTTP on :: port 8000 (http://[::]:8000/) ...
-# navigate to http://localhost:8000 and see a file listing of the directory that you ran the command in!
 ```
 
-## Preparations
+---
 
-### Create a repository from this the template repository and clone it locally
+### Steps
 
-[https://github.com/UtrechtUniversity/src-component-template](https://github.com/UtrechtUniversity/src-component-template)
+#### Step 1: Prepare the Environment
 
-### Create a Component in the portal
+1. **Create a repository:**  
+   Clone the [SRC Component Template Repository](https://github.com/UtrechtUniversity/src-component-template) to get started.
 
-1. Login to the ResearchCloud portal
-1. Go to Catalog > Components and create a new one using the '+' button.
-    * Choose script type 'Ansible Playbook'
-    * Fill in the required details
-    * Add parameters to your component
+2. **Add the `uusrc.general` collection requirement:**  
+   Update the `requirements.yml` file in your repository with the following:
 
-**Note**: you can of course come back to edit your component and its parameters later. When you do so, remember that you'll need to [promote your changes to the *Live* version of the component](https://servicedesk.surf.nl/wiki/pages/viewpage.action?pageId=102826582)!
+   ```yaml
+   collections:
+     - name: uusrc.general
+   ```
 
-### Create a Catalog Item
+3. **Create a ResearchCloud component:**  
+   In the ResearchCloud portal:
+   - Navigate to **Catalog > Components**.
+   - Create a new Ansible Playbook component and define any parameters necessary.
 
-For the purposes of this tutorial, you can simply find the *UU Demo Test* Catalog Item and Clone it, then add your custom component to it.
+4. **Set up a Catalog Item for testing:**  
+   Use the `Ubuntu Nginx Development Base` Catalog Item as your development workspace and add your custom component to it.
 
-**Note**: as you will see, the *UU Test Demo* Catalog Item already contains the three standard SURF components, as well as Nginx. Nginx will be configured to allow authorization/authentication using SRAM/Single-sign on.
+5. **Start a test container with Nginx pre-installed:**  
 
-### Pull and start the the test container
+   Pull the container:
+   ```bash
+   podman pull ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_jammy-nginx
+   ```
 
-Since we'll be testing a webapplication that will be served with nginx, you can use a special flavour of the [test container](https://github.com/UtrechtUniversity/SRC-test-workspace/) that already has the *SRC-Nginx* component installed on it! Just pull the following image:
+   Run the container:
+   ```bash
+   podman run -p 8080:80 -d --name src_component_test -v $(pwd):/etc/rsc/my_component ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_jammy /sbin/init
+   ```
 
-`podman pull ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_jammy-nginx` (or use `docker` instead)
+---
 
-**Note**: the container comes with nginx installed just as it would be on a workspace. However, for testing purposes, it has SSL disabled and is not actually configured to perform authentication using an external auth server.
+#### Step 2: Develop Your Playbook
 
-For testing purporses, it will be useful to publish the port on the container on which Nginx is listening (`80`) to a port on your host machine. Try running this command:
+##### 1. Create a Virtual Environment
+Use Ansible to create a Python virtual environment that will isolate your application.
 
-`podman run -p 8080:80 -d --name src_component_test -v $(pwd):/etc/rsc/my_component ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_jammy /sbin/init`
+<details>
+<summary><b>Ansible Task</b></summary>
 
-If all goes well, you will be able to open a browser and load http://localhost:8080 to connect to Nginx on the container. Of course, nothing will actually be served yet.
+```yaml
+- name: Install Python venv package
+  ansible.builtin.package:
+    name: python3-venv
+    state: present
 
-### Edit and test
-
-Make changes to your ansible playbook, then apply them to the test container using:
-
-`podman exec src_component_test run_component.sh /etc/rsc/my_component/playbook.yml` (from the same directory as your playbook)
-
-The `run_component.sh` script will automatically look for a file named `component_vars.yml` in the same directory as your playbook. You can use this file to mock ResearchCloud parameters.
-
-*Hint*: for best testing, make all of your variables in `component_vars.yml` strings!
-
-```yml
-foo: 'true' # ResearchCloud turns all variables into strings, so to mock correctly, use quotes to set too the string 'true', instead of a YAML Boolean.
+- name: Create a virtual environment for the web application
+  ansible.builtin.command:
+    cmd: python3 -m venv /opt/python_webapp_venv
+    creates: /opt/python_webapp_venv
 ```
 
-## Development
+</details>
 
-Below are steps that your playbook will probably (or definitely) need to execute in order to get your web application up and running. The steps are abstractly described, on purpose: try to figure out how you can use Ansible to do these things yourself!
+---
 
-### Installing dependencies
+##### 2. Define a System Service for the Webserver
 
-Look up your application's dependencies, if there are any. Required system packages should be installed with the [package module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html).
+To ensure the Python webserver starts automatically on boot and is managed as a service, create a `systemd` unit file.
 
-Depending on how your application is shipped, there may also be other kinds of dependencies (Node etc.).
+**Example `systemd` service template:**
 
-### Installing the application
-
-Depending on the preferred installation method of your application: [clone](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/git_module.html), [download](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html), or use a [package manager](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html) to install it.
-
-If your application is shipped as a Python package, it should probably be installed in a virtualenv. Use the [pip module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/pip_module.html)!
-
-### Create a system service definition for the application
-
-At this point, you *could* just run your application (for instance, by issuing a command like `python3 /path/to/my/app`). However, what happens if the workspace is restarted? Your application won't simply start up again!
-
-To ensure the application is restarted when needed:
-
-1. create a systemd unit file for your application.
-1. copy it to correct location using the [copy module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html).
-   * A good location for a systemd file is probably `/lib/systemd/system/yourapp.service`.
-1. use the [systemd module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/systemd_module.html) to enable and start the service.
-
-Here's a template for a systemd unit file:
-
-```
+```ini
 [Unit]
-Description=My application
+Description=Python HTTP Server in Virtual Environment
 After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/path/to/your/app/dir
-ExecStart=<app start command>
+WorkingDirectory=/path/to/directory/to/serve
+ExecStart=/opt/python_webapp_venv/bin/python -m http.server 5000
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-### Let Nginx serve your application using a reverse proxy
+Modify `/path/to/directory/to/serve` to the directory you want served.
 
-This could be complicated, but fortunately, you can use the `uusrc.general.nginx_reverse_proxy` role for this! See [here](https://utrechtuniversity.github.io/researchcloud-items/playbooks/reverse_proxy.html) for documentation.
+Then in your playbook, ensure this file is copied to the right location using the [copy module](https://docs.ansible.com/projects/ansible/latest/collections/ansible/builtin/copy_module.html):
 
-1. Apply the role in your playbook and pass in the variables necessary to set up a reverse proxy to port 5000 (assuming that is the port your webapp is using) on the container.
-1. Run your playbook on the container, and try connecting to http://localhost:8080
+<details>
+<summary><b>Ansible Task for Copying the systemd Service</b></summary>
 
-If this works, try enabling various forms of authentication:
+```yaml
+- name: Deploy systemd service for Python web server
+  ansible.builtin.copy:
+    dest: /lib/systemd/system/python_webapp.service
+    content: |
+      [Unit]
+      Description=Python HTTP Server in Virtual Environment
+      After=network.target
 
-1. Use the `auth: sram` attribute to enable SRAM authorization and Single-Sign on on the workspace.
-    * Note: this won't actually work on the test container.)
-1. Use the `auth: basic` attribute to enable HTTP basic username/password authentication.
+      [Service]
+      User=root
+      WorkingDirectory=/path/to/directory/to/serve
+      ExecStart=/opt/python_webapp_venv/bin/python -m http.server 5000
+      Restart=always
 
-### ...and more
+      [Install]
+      WantedBy=multi-user.target
+```
 
-Of course, the above steps are not exhaustive. For example, maybe it would be nice if your application didn't run as root (you could create a dedicated user using the [user](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/user_module.html) module). But maybe give your new component a try on ResearchCloud first!
+</details>
 
-# Deploy on ResearchCloud
+Then use Ansible's [`systemd` module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/systemd_module.html) to enable and start the service.
 
-When you're ready to deploy on ResearchCloud, don't forget to `git push` to your component's repository first!
+<details>
+<summary><b>Ansible Task to Start the Service</b></summary>
+
+```yaml
+- name: Enable and start Python webserver
+  ansible.builtin.systemd:
+    name: python_webapp
+    enabled: true
+    state: started
+```
+
+</details>
+
+---
+
+##### 3. Configure Nginx as a Reverse Proxy
+
+The `uusrc.general.nginx_reverse_proxy` role allows you to configure Nginx to forward incoming requests to your Python webserver.  
+
+Include the `uusrc.general.nginx_reverse_proxy` role in the `roles:` section of your playbook like this:
+
+```yaml
+roles:
+  - role: uusrc.general.nginx_reverse_proxy
+    vars: # your variables below here -- see https://utrechtuniversity.github.io/researchcloud-items/roles/nginx_reverse_proxy.html
+    # ensure nginx reverse proxies to the right port for your webapplication
+```
+
+---
+
+#### Step 3: Test the Setup
+
+1. Run your playbook in the test container:
+
+   ```bash
+   podman exec src_component_test run_component.sh /etc/rsc/my_component/playbook.yml
+   ```
+
+2. Open [http://localhost:8080](http://localhost:8080) in your browser. You should see Python's web server serving the directory.
+
+If step 1 fails or step 2 does not produce the correct result, modify your playbook and run it again!
+
+---
+
+#### Step 4: Enable authentication
+
+Configure the `nginx_reverse_proxy` role to enable authentication.
+
+1. **Enable authentication:**
+   - Use `auth: sram` for Single Sign-On via SRAM authentication (note: this won't work on the test container but will function on ResearchCloud).
+   - Use `auth: basic` for HTTP basic authentication on the test container.
+
+Repeat Step 3 to test!
+
+---
+
+#### Step 5: Deploy on ResearchCloud
+
+When you're ready:
+1. Push all changes to the component's repository:
+   ```bash
+   git push
+   ```
+2. Start a new ResearchCloud workspace with your Catalog Item.
+3. When the workspace is ready, click the yellow 'Access' button. The browser should be redirected to your webapplication running in the cloud!
