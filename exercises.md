@@ -2,6 +2,8 @@
 
 This document contains two exercises for creating ResearchCloud components. Follow the step-by-step instructions to build and practice with components.
 
+*The exercises below are designed such that you can test them with Ansible locally (in case of the second exercise, by using a special test container). If you want to test using Ansible on a ResearchCloud VM, beware that Ansible is installed in a virtual environment. To activate it: `source /etc/src/venv/src-venv/bin/activate`.*
+
 ## Exercises:
 1. [Check for GPUs using Ansible facts](#exercise-1-check-for-gpus-using-ansible-facts)
 2. [Set up a Web Application](#exercise-2-set-up-a-web-application)
