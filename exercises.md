@@ -212,7 +212,7 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 
    Run the container:
    ```bash
-   podman run -p 8080:80 -d --name src_component_test -v $(pwd):/etc/rsc/my_component ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_noble /sbin/init
+   podman run -p 8080:80 -d --name src_component_test -v $(pwd):/etc/rsc/my_component ghcr.io/utrechtuniversity/src-test-workspace:ubuntu_noble-nginx /sbin/init
    ```
 
 ---
